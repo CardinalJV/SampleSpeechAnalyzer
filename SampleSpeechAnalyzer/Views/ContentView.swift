@@ -8,14 +8,32 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    let speechManager: SpeechManager
+    let recorder: Recorder
+    
+    init() {
+        self.speechManager = SpeechManager()
+        self.recorder = Recorder(transcriber: self.speechManager)
+    }
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Button("Record") {
+                recorder.playRecording()
+            }
+            
+            liveRecordingView
         }
         .padding()
+    }
+    
+    @ViewBuilder
+    var liveRecordingView: some View {
+        Text(speechManager.finalizedTranscript + speechManager.volatileTranscript)
+            .font(.title)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .foregroundStyle(.white)
     }
 }
 

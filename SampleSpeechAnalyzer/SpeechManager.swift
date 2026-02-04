@@ -60,6 +60,25 @@ final class SpeechManager {
     var finalizedTranscript: AttributedString = ""
     // Set the default language
     static let locale = Locale(components: .init(languageCode: .english, script: nil, languageRegion: .unitedStates))
+    // Init
+    init() {
+        SFSpeechRecognizer.requestAuthorization { authStatus in
+            DispatchQueue.main.async {
+                switch authStatus {
+                case .authorized:
+                    print("SpeechRecognizer authorized.")
+                case .denied:
+                    print("SpeechRecognizer denied.")
+                case .notDetermined:
+                    print("SpeechRecognizer notDetermined.")
+                case .restricted:
+                     print("SpeechRecognizer restricted")
+                @unknown default:
+                    print("Error unknown")
+                }
+            }
+        }
+    }
     // Set the transcriber
     func setUpTranscriber() async throws {
         /// Create the transcriber
@@ -109,8 +128,10 @@ final class SpeechManager {
                 print("speech recognition failed")
             }
         }
+        /// Launch the process
+        try await analyzer?.start(inputSequence: inputSequence)
     }
-    /// Launch the stream
+    // Launch the stream
     func streamAudioToTranscriber(_ buffer: AVAudioPCMBuffer) async throws {
         guard let inputBuilder, let analyzerFormat else {
             throw TranscriptionError.invalidAudioDataType
@@ -119,7 +140,7 @@ final class SpeechManager {
         let input = AnalyzerInput(buffer: converted)
         inputBuilder.yield(input)
     }
-    /// Ending the process
+    // End the process
     public func finishTranscribing() async throws {
         inputBuilder?.finish()
         try await analyzer?.finalizeAndFinishThroughEndOfInput()
